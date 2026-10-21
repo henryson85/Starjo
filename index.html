@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f2a4a">
+<title>Skyjo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=DM+Sans:wght@400;500;700&display=swap">
+<style>
+:root {
+  --bg: #0f2a4a; --bg-deep: #08172b;
+  --surface: rgba(255,255,255,.08); --surface-2: rgba(255,255,255,.16);
+  --field: rgba(5,15,35,.55);
+  --fg: #f4f8ff; --muted: #b9cbe8; --line: rgba(255,255,255,.22);
+  --accent: #ffd23f; --accent-fg: #14243d;
+  --good: #2fe0b0; --bad: #ff5a6e; --sky: #3fd0ff;
+  --font-display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+  --font-body: "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; }
+body {
+  color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.4;
+  padding: max(16px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(36px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  background:
+    radial-gradient(60% 40% at 0% 0%, rgba(63,208,255,.35), transparent 70%),
+    radial-gradient(55% 35% at 100% 20%, rgba(255,95,162,.30), transparent 70%),
+    linear-gradient(170deg, #17406e 0%, var(--bg) 50%, var(--bg-deep) 100%);
+  background-attachment: fixed; background-color: var(--bg);
+}
+#app { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
+h1, h2, h3 { font-family: var(--font-display); margin: 0; line-height: 1.05; text-wrap: balance; }
+h1 { font-size: 3.4rem; font-weight: 800; letter-spacing: -.03em; }
+h2 { font-size: 1.5rem; font-weight: 800; }
+p { margin: 0; }
+.logo { background: linear-gradient(90deg, var(--accent), #ff8a5b 50%, var(--sky)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.muted { color: var(--muted); } .small { font-size: .9rem; }
+.label { font-size: .75rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; gap: 10px; align-items: center; } .row > * { min-width: 0; }
+.spread { justify-content: space-between; } .wrap { flex-wrap: wrap; }
+.panel { -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.btn { border: 0; border-radius: 12px; padding: 14px 18px; font-weight: 700; font-size: 1.05rem; background: var(--accent); color: var(--accent-fg); box-shadow: 0 5px 0 rgba(0,0,0,.25); width: 100%; text-align: center; }
+.btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.25); }
+.btn.ghost { background: var(--surface-2); color: var(--fg); box-shadow: none; }
+.btn.small { width: auto; padding: 9px 14px; font-size: .95rem; box-shadow: none; }
+.btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+input[type="text"] { font: inherit; color: var(--fg); background: var(--field); border: 1px solid var(--line); border-radius: 10px; padding: 13px 14px; width: 100%; min-width: 0; font-size: 1.05rem; }
+input::placeholder { color: rgba(185,203,232,.6); }
+.codefield { text-transform: uppercase; letter-spacing: .4em; text-align: center; font-family: var(--font-display); font-weight: 800; font-size: 1.8rem !important; }
+.code { font-family: var(--font-display); font-weight: 800; font-size: 3.4rem; letter-spacing: .25em; text-align: center; padding-left: .25em; }
+.player { display: flex; align-items: center; gap: 10px; padding: 11px 13px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.player .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--good); flex: none; }
+.player.off .dot { background: #777; }
+.player .nm { flex: 1; font-weight: 700; overflow-wrap: anywhere; }
+.badge { font-size: .72rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: var(--accent); color: var(--accent-fg); }
+.badge.soft { background: var(--surface-2); color: var(--fg); }
+.banner { padding: 12px 14px; border-radius: 12px; background: var(--surface-2); text-align: center; font-weight: 700; }
+.banner.me { background: var(--accent); color: var(--accent-fg); }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: #fff; color: #14243d; padding: 12px 18px; border-radius: 12px; font-weight: 700; max-width: 90vw; z-index: 9; box-shadow: 0 8px 30px rgba(0,0,0,.4); }
+.toast[hidden] { display: none; }
+.conn { text-align: center; padding: 8px; font-size: .9rem; color: var(--accent); }
+
+/* Karten */
+.card { --cw: 100%; position: relative; border: 0; border-radius: 10px; aspect-ratio: 5 / 7; width: var(--cw); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; color: #14243d; padding: 0; box-shadow: 0 3px 0 rgba(0,0,0,.3), inset 0 0 0 3px rgba(255,255,255,.35); }
+.card.v-neg { background: #4c6ef5; color: #fff; }
+.card.v-zero { background: #7ee0f0; }
+.card.v-low { background: #69db7c; }
+.card.v-mid { background: #ffd43b; }
+.card.v-high { background: #ff6b6b; color: #fff; }
+.card.down { background: repeating-linear-gradient(45deg, #5a3fc0, #5a3fc0 8px, #4a31a8 8px, #4a31a8 16px); color: transparent; }
+.card.gone { background: transparent; box-shadow: none; border: 2px dashed rgba(255,255,255,.15); }
+.card.empty { background: transparent; box-shadow: inset 0 0 0 2px rgba(255,255,255,.25); }
+.card.act { cursor: pointer; outline: 3px solid var(--accent); outline-offset: 2px; animation: pulse 1.2s ease-in-out infinite; }
+.card:disabled { cursor: default; }
+@keyframes pulse { 50% { outline-color: rgba(255,210,63,.35); } }
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.mini { --cw: 100%; font-size: .95rem; }
+.mini.grid { gap: 4px; }
+.mini .card { border-radius: 5px; box-shadow: 0 1px 0 rgba(0,0,0,.3); font-size: .85rem; }
+.others { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.opp { padding: 8px; border-radius: 12px; background: var(--surface); border: 2px solid transparent; display: flex; flex-direction: column; gap: 6px; }
+.opp.turn { border-color: var(--accent); background: rgba(255,210,63,.12); }
+.opp .hd { display: flex; justify-content: space-between; gap: 6px; font-size: .85rem; font-weight: 700; }
+.opp .hd .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.me-box { padding: 10px; border-radius: 14px; background: var(--surface); border: 2px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+.me-box.turn { border-color: var(--accent); background: rgba(255,210,63,.1); }
+.table { display: flex; gap: 14px; align-items: flex-start; justify-content: center; padding: 6px 0; }
+.pile { width: 76px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: .8rem; color: var(--muted); text-align: center; }
+.pile .card { font-size: 1.6rem; }
+.score { width: 100%; border-collapse: collapse; }
+.score td, .score th { padding: 8px 6px; text-align: right; border-bottom: 1px solid var(--line); }
+.score td:first-child, .score th:first-child { text-align: left; font-weight: 700; }
+.score .dbl { color: var(--bad); font-weight: 800; }
+.podium { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.podium.first { background: linear-gradient(135deg, #ffb020, #ff6b6b); color: #fff; border-color: transparent; }
+.podium .rank { font-family: var(--font-display); font-weight: 800; font-size: 1.8rem; width: 1.6ch; text-align: center; }
+.podium .nm { flex: 1; font-weight: 700; font-size: 1.15rem; overflow-wrap: anywhere; }
+.podium .sc { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; }
+.legend { display: flex; gap: 6px; flex-wrap: wrap; font-size: .78rem; }
+.legend span { padding: 3px 8px; border-radius: 999px; font-weight: 700; color: #14243d; }
+@media (prefers-reduced-motion: reduce) { .card.act { animation: none; } .btn:active { transform: none; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast" hidden role="alert"></div>
+<script>
+(function () {
+  'use strict';
+  var app = document.getElementById('app');
+  var toastEl = document.getElementById('toast');
+  var S = { ws: null, open: false, st: null, session: null, drafts: {}, retry: 0, toastTimer: null, connecting: true };
+  var urlCode = '';
+  try { urlCode = (new URLSearchParams(location.search).get('code') || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4); } catch (e) {}
+  function load(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function drop(k) { try { localStorage.removeItem(k); } catch (e) {} }
+  S.session = load('skyjo-session');
+  S.drafts.name = load('skyjo-name') || '';
+  S.drafts.code = urlCode;
+
+  function h(tag, props) {
+    var el = document.createElement(tag);
+    var kids = Array.prototype.slice.call(arguments, 2);
+    if (props) for (var k in props) {
+      var v = props[k];
+      if (v === false || v == null) continue;
+      if (k === 'class') el.className = v;
+      else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+      else if (k === 'value') el.value = v;
+      else if (v === true) el.setAttribute(k, '');
+      else el.setAttribute(k, v);
+    }
+    kids.forEach(function add(c) {
+      if (c == null || c === false) return;
+      if (Array.isArray(c)) return c.forEach(add);
+      el.appendChild(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
+    });
+    return el;
+  }
+  function send(o) { if (S.ws && S.open) S.ws.send(JSON.stringify(o)); }
+  function toast(msg) {
+    toastEl.textContent = msg; toastEl.hidden = false;
+    clearTimeout(S.toastTimer);
+    S.toastTimer = setTimeout(function () { toastEl.hidden = true; }, 3500);
+  }
+  function player(id) { return S.st.players.filter(function (p) { return p.id === id; })[0]; }
+  function me() { return player(S.st.you); }
+  function isHost() { return S.st.host === S.st.you; }
+  function nameOf(id) { var p = player(id); return p ? p.name : '?'; }
+  function shareLink() { return location.origin + '/skyjo?code=' + S.st.code; }
+
+  function connect() {
+    var proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    var ws = new WebSocket(proto + '//' + location.host + '/ws-skyjo');
+    S.ws = ws; S.connecting = true;
+    ws.onopen = function () {
+      S.open = true; S.retry = 0; S.connecting = false;
+      if (S.session) send({ t: 'rejoin', code: S.session.code, pid: S.session.pid, token: S.session.token });
+      render();
+    };
+    ws.onmessage = function (e) {
+      var m; try { m = JSON.parse(e.data); } catch (x) { return; }
+      if (m.t === 'joined') { S.session = { code: m.code, pid: m.pid, token: m.token }; save('skyjo-session', S.session); }
+      else if (m.t === 'state') { S.st = m.state; render(); }
+      else if (m.t === 'error') toast(m.msg);
+      else if (m.t === 'rejoin_failed') { S.session = null; S.st = null; drop('skyjo-session'); render(); }
+    };
+    ws.onclose = function () {
+      S.open = false; S.connecting = true; render();
+      var wait = Math.min(8000, 800 * Math.pow(1.6, S.retry++));
+      setTimeout(connect, wait);
+    };
+    ws.onerror = function () {};
+  }
+
+  // ---------- Bausteine ----------
+  function vclass(v) { return v < 0 ? 'v-neg' : v === 0 ? 'v-zero' : v <= 4 ? 'v-low' : v <= 8 ? 'v-mid' : 'v-high'; }
+  function cardEl(c, opts) {
+    opts = opts || {};
+    var cls = 'card';
+    var txt = '';
+    if (!c) cls += ' empty';
+    else if (c.s === 'gone') cls += ' gone';
+    else if (c.s === 'down') cls += ' down';
+    else { cls += ' ' + vclass(c.v); txt = String(c.v); }
+    if (opts.act) cls += ' act';
+    return h('button', { class: cls, disabled: !opts.act, 'aria-label': c && c.s === 'up' ? 'Karte ' + c.v : (c && c.s === 'gone' ? 'weg' : 'verdeckte Karte'), onclick: opts.onclick }, txt);
+  }
+  function leaveButton() {
+    return h('button', { class: 'btn ghost', onclick: function () {
+      if (confirm('Wirklich aussteigen?')) { send({ t: 'leave' }); S.session = null; S.st = null; drop('skyjo-session'); render(); }
+    } }, 'Lobby verlassen');
+  }
+  function legend() {
+    var items = [['-2/-1', '#4c6ef5', '#fff'], ['0', '#7ee0f0'], ['1–4', '#69db7c'], ['5–8', '#ffd43b'], ['9–12', '#ff6b6b', '#fff']];
+    return h('div', { class: 'legend' }, items.map(function (i) { return h('span', { style: 'background:' + i[1] + (i[2] ? ';color:' + i[2] : '') }, i[0]); }));
+  }
+  function draftInput(id, props) {
+    props = props || {};
+    var after = props.after; delete props.after;
+    props.id = id; props.type = 'text'; props.value = S.drafts[id] || '';
+    props.oninput = function (e) { S.drafts[id] = e.target.value; if (id === 'name') save('skyjo-name', e.target.value); if (after) after(e); };
+    return h('input', props);
+  }
+  function connBanner() { return !S.open ? h('div', { class: 'conn' }, S.connecting ? 'Verbinde …' : 'Verbindung weg, versuche es erneut …') : null; }
+
+  // ---------- Bildschirme ----------
+  function screenHome() {
+    var nameOk = function () { return (S.drafts.name || '').trim().length > 0; };
+    var codeOk = function () { return (S.drafts.code || '').length === 4; };
+    var join = h('button', { class: 'btn', onclick: function () { send({ t: 'join', code: S.drafts.code, name: S.drafts.name }); } }, 'Beitreten');
+    var create = h('button', { class: 'btn ghost', onclick: function () { send({ t: 'create', name: S.drafts.name }); } }, 'Neue Lobby erstellen');
+    var sync = function () { join.disabled = !(S.open && nameOk() && codeOk()); create.disabled = !(S.open && nameOk()); };
+    sync();
+    return [
+      h('div', { class: 'stack' }, h('h1', { class: 'logo' }, 'Skyjo'),
+        h('p', { class: 'muted' }, 'Das Kartenspiel: Wer am Ende die wenigsten Punkte hat, gewinnt. Jeder spielt auf dem eigenen Handy.')),
+      connBanner(),
+      h('section', { class: 'panel' },
+        h('label', { class: 'label', for: 'name' }, 'Dein Name'),
+        draftInput('name', { maxlength: 16, placeholder: 'Wie heißt du?', autocomplete: 'nickname', after: sync }),
+        h('label', { class: 'label', for: 'code' }, 'Lobby-Code'),
+        draftInput('code', { maxlength: 4, placeholder: 'ABCD', class: 'codefield', autocapitalize: 'characters', autocomplete: 'off', after: function (e) { var v = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 4); e.target.value = v; S.drafts.code = v; sync(); } }),
+        join, create),
+      h('p', { class: 'muted small' }, '2 bis 8 Spieler. Gespielt wird, bis jemand 100 Punkte erreicht.')
+    ];
+  }
+
+  function screenLobby() {
+    var st = S.st, host = isHost();
+    var connected = st.players.filter(function (p) { return p.connected && !p.left; }).length;
+    var ready = connected >= st.minPlayers;
+    var copy = h('button', { class: 'btn ghost small', onclick: function () {
+      var l = shareLink();
+      if (navigator.clipboard) navigator.clipboard.writeText(l).then(function () { toast('Link kopiert'); }, function () { toast(l); }); else toast(l);
+    } }, 'Link kopieren');
+    var wa = 'https://wa.me/?text=' + encodeURIComponent('Komm in meine Skyjo-Lobby! Code: ' + st.code + '\n' + shareLink());
+    return [
+      h('div', { class: 'stack' }, h('span', { class: 'label' }, 'Lobby-Code'),
+        h('div', { class: 'code' }, st.code),
+        h('div', { class: 'row wrap' }, copy, h('a', { class: 'btn ghost small', href: wa, target: '_blank', rel: 'noopener', style: 'text-decoration:none' }, 'In WhatsApp teilen'))),
+      h('section', { class: 'panel' }, h('span', { class: 'label' }, 'Spieler (' + st.players.length + ' von 8)'),
+        st.players.map(function (p) {
+          return h('div', { class: 'player' + (p.connected ? '' : ' off') }, h('span', { class: 'dot' }),
+            h('span', { class: 'nm' }, p.name + (p.id === st.you ? ' (du)' : '')),
+            p.id === st.host ? h('span', { class: 'badge' }, 'Host') : null);
+        })),
+      host
+        ? h('button', { class: 'btn', disabled: !ready, onclick: function () { send({ t: 'start' }); } }, ready ? 'Spiel starten' : 'Noch ' + (st.minPlayers - connected) + ' Spieler fehlt')
+        : h('div', { class: 'banner' }, 'Warte, bis ' + nameOf(st.host) + ' das Spiel startet.'),
+      leaveButton()
+    ];
+  }
+
+  function oppBox(p, st) {
+    var turn = st.phase === 'play' && st.turn === p.id;
+    return h('div', { class: 'opp' + (turn ? ' turn' : '') },
+      h('div', { class: 'hd' }, h('span', { class: 'n' }, p.name + (p.connected && !p.left ? '' : ' (weg)')), h('span', null, p.total + ' P.')),
+      h('div', { class: 'mini grid' }, p.cards.map(function (c) { return cardEl(c); })),
+      h('div', { class: 'muted small' }, st.phase === 'setup' ? (p.ups >= 2 ? 'bereit' : 'wählt Karten …') : 'sichtbar: ' + p.visible));
+  }
+
+  function screenGame() {
+    var st = S.st, mp = me(), myTurn = st.phase === 'play' && st.turn === st.you;
+    var tp = st.tphase;
+    var setupFlips = st.phase === 'setup' ? Math.max(0, 2 - mp.ups) : 0;
+    var info, kind = '';
+    if (!mp.inRound) info = 'Du schaust zu. In der nächsten Runde bist du wieder dabei.';
+    else if (st.phase === 'setup') info = setupFlips > 0 ? 'Decke ' + setupFlips + (setupFlips === 1 ? ' Karte' : ' Karten') + ' auf (tippe auf verdeckte Karten).' : 'Warte auf die anderen …';
+    else if (myTurn) {
+      kind = 'me';
+      if (tp === 'choose') info = 'Du bist dran: Zieh vom Stapel oder nimm die offene Karte.';
+      else if (tp === 'holdDeck') info = 'Tippe auf eine deiner Karten, um sie zu tauschen. Oder wirf die gezogene Karte ab und decke dafür eine verdeckte Karte auf.';
+      else if (tp === 'holdDiscard') info = 'Tippe auf die Karte, die du dafür abgeben willst.';
+      else if (tp === 'mustFlip') info = 'Decke jetzt eine verdeckte Karte auf.';
+    } else info = nameOf(st.turn) + ' ist dran …';
+    if (st.finisher && st.phase === 'play') info += ' Letzte Runde: ' + nameOf(st.finisher) + ' hat alle Karten aufgedeckt.';
+
+    var canDeck = myTurn && tp === 'choose';
+    var canTake = myTurn && tp === 'choose' && st.discardTop != null;
+    var holding = st.phase === 'play' && st.holding != null ? st.holding : null;
+    var myGrid = h('div', { class: 'grid' }, mp.cards.map(function (c, i) {
+      var act = false, onclick = null;
+      if (st.phase === 'setup' && setupFlips > 0 && c.s === 'down') { act = true; onclick = function () { send({ t: 'flip', i: i }); }; }
+      else if (myTurn && (tp === 'holdDeck' || tp === 'holdDiscard') && c.s !== 'gone') { act = true; onclick = function () { send({ t: 'place', i: i }); }; }
+      else if (myTurn && tp === 'mustFlip' && c.s === 'down') { act = true; onclick = function () { send({ t: 'flip', i: i }); }; }
+      return cardEl(c, { act: act, onclick: onclick });
+    }));
+    var hasDown = mp.cards.some(function (c) { return c.s === 'down'; });
+    var others = st.players.filter(function (p) { return p.id !== st.you && p.inRound; });
+    return [
+      h('div', { class: 'row spread' }, h('h2', null, 'Runde ' + st.round), h('span', { class: 'badge soft' }, 'Code ' + st.code)),
+      connBanner(),
+      h('div', { class: 'banner ' + kind }, info),
+      h('div', { class: 'table' },
+        h('div', { class: 'pile' }, cardEl({ s: 'down' }, { act: canDeck, onclick: function () { send({ t: 'draw' }); } }), 'Stapel (' + st.deckCount + ')'),
+        h('div', { class: 'pile' }, cardEl(st.discardTop == null ? null : { s: 'up', v: st.discardTop }, { act: canTake, onclick: function () { send({ t: 'take' }); } }), 'Offene Karte'),
+        holding != null ? h('div', { class: 'pile' }, cardEl({ s: 'up', v: holding }), 'In der Hand') : null),
+      myTurn && tp === 'holdDeck' && hasDown ? h('button', { class: 'btn ghost', onclick: function () { send({ t: 'discard' }); } }, 'Abwerfen und eine Karte aufdecken') : null,
+      h('div', { class: 'me-box' + (myTurn ? ' turn' : '') },
+        h('div', { class: 'row spread' }, h('strong', null, 'Du (' + mp.name + ')'), h('span', { class: 'muted small' }, 'Gesamt ' + mp.total + ' · sichtbar ' + mp.visible)),
+        myGrid),
+      others.length ? h('div', { class: 'others' }, others.map(function (p) { return oppBox(p, st); })) : null,
+      legend(),
+      leaveButton()
+    ];
+  }
+
+  function resultTable(st) {
+    var rows = st.result.rows.slice().sort(function (a, b) { return a.total - b.total; });
+    return h('table', { class: 'score' },
+      h('thead', null, h('tr', null, h('th', null, 'Name'), h('th', null, 'Runde'), h('th', null, 'Gesamt'))),
+      h('tbody', null, rows.map(function (r) {
+        return h('tr', null,
+          h('td', null, r.name + (r.id === st.you ? ' (du)' : '') + (r.id === st.result.finisher ? ' ⚑' : '')),
+          h('td', { class: r.doubled ? 'dbl' : '' }, (r.points > 0 ? '+' : '') + r.points + (r.doubled ? ' (×2)' : '')),
+          h('td', null, r.total));
+      })));
+  }
+
+  function screenRoundEnd() {
+    var st = S.st, host = isHost();
+    var others = st.players.filter(function (p) { return p.inRound; });
+    return [
+      h('div', { class: 'stack' }, h('span', { class: 'label' }, 'Runde ' + st.round + ' vorbei'), h('h2', null, 'Zwischenstand')),
+      h('section', { class: 'panel' }, resultTable(st), h('p', { class: 'muted small' }, '⚑ hat die Runde beendet. Wer die Runde beendet, aber nicht die wenigsten Punkte hat, bekommt seine Punkte verdoppelt (nur wenn sie positiv sind).')),
+      h('div', { class: 'others' }, others.map(function (p) { return oppBox(p, st); })),
+      host ? h('button', { class: 'btn', onclick: function () { send({ t: 'next' }); } }, 'Nächste Runde')
+           : h('div', { class: 'banner' }, 'Warte, bis ' + nameOf(st.host) + ' die nächste Runde startet.'),
+      leaveButton()
+    ];
+  }
+
+  function screenFinal() {
+    var st = S.st, host = isHost();
+    return [
+      h('div', { class: 'stack' }, h('span', { class: 'label' }, 'Spielende'), h('h2', null, st.ranking.length ? st.ranking[0].name + ' gewinnt!' : 'Fertig')),
+      h('div', { class: 'stack' }, st.ranking.map(function (r, i) {
+        return h('div', { class: 'podium' + (i === 0 ? ' first' : '') }, h('span', { class: 'rank' }, String(i + 1)),
+          h('span', { class: 'nm' }, r.name + (r.id === st.you ? ' (du)' : '')), h('span', { class: 'sc' }, String(r.total)));
+      })),
+      h('section', { class: 'panel' }, h('span', { class: 'label' }, 'Letzte Runde'), resultTable(st)),
+      host ? h('button', { class: 'btn', onclick: function () { send({ t: 'again' }); } }, 'Nochmal spielen')
+           : h('div', { class: 'banner' }, 'Warte, bis ' + nameOf(st.host) + ' eine neue Runde startet.'),
+      leaveButton()
+    ];
+  }
+
+  function render() {
+    var active = document.activeElement, focusId = active && active.id && app.contains(active) ? active.id : null;
+    var pos = focusId && active.selectionStart != null ? [active.selectionStart, active.selectionEnd] : null;
+    var kids;
+    if (!S.st) kids = screenHome();
+    else if (S.st.phase === 'lobby') kids = screenLobby();
+    else if (S.st.phase === 'setup' || S.st.phase === 'play') kids = screenGame();
+    else if (S.st.phase === 'roundEnd') kids = screenRoundEnd();
+    else kids = screenFinal();
+    app.replaceChildren.apply(app, kids.filter(Boolean));
+    if (focusId) { var el = document.getElementById(focusId); if (el) { el.focus(); if (pos) try { el.setSelectionRange(pos[0], pos[1]); } catch (e) {} } }
+  }
+
+  render();
+  connect();
+})();
+</script>
+</body>
+</html>

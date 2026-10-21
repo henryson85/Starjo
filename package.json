@@ -1,0 +1,9 @@
+{
+  "name": "skyjo-online",
+  "version": "1.0.0",
+  "description": "Skyjo online mit Lobby-Code",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "test": "node test.js" },
+  "dependencies": { "ws": "^8.18.0" },
+  "engines": { "node": ">=18" }
+}
