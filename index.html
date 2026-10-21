@@ -84,6 +84,20 @@ input::placeholder { color: rgba(185,203,232,.6); }
 .mini.grid { gap: 4px; }
 .mini .card { border-radius: 5px; box-shadow: 0 1px 0 rgba(0,0,0,.3); font-size: .85rem; }
 .others { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.others.n1 { grid-template-columns: minmax(0, 220px); justify-content: center; }
+.others.n3 { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.others.n3 .opp .hd { font-size: .75rem; }
+.opp .big { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; color: var(--accent); line-height: 1; }
+.btn.big { padding: 18px 16px; font-size: 1.15rem; background: var(--good); color: #06281e; animation: glow 1.4s ease-in-out infinite; }
+@keyframes glow { 50% { box-shadow: 0 5px 0 rgba(0,0,0,.25), 0 0 0 5px rgba(47,224,176,.35); } }
+.board { display: flex; gap: 6px; overflow-x: auto; }
+.chip { flex: 1 0 auto; min-width: 64px; padding: 6px 10px; border-radius: 12px; background: var(--surface); border: 2px solid transparent; text-align: center; display: flex; flex-direction: column; line-height: 1.1; }
+.chip.turn { border-color: var(--accent); background: rgba(255,210,63,.15); }
+.chip .cn { font-size: .75rem; font-weight: 700; color: var(--muted); max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip .cs { font-family: var(--font-display); font-weight: 800; font-size: 1.6rem; }
+.chip.mine .cs { color: var(--accent); }
+.chip .cv { font-size: .72rem; color: var(--muted); }
+.me-box .sc { font-size: .95rem; } .me-box .sc b { font-family: var(--font-display); font-size: 1.3rem; color: var(--accent); }
 .opp { padding: 8px; border-radius: 12px; background: var(--surface); border: 2px solid transparent; display: flex; flex-direction: column; gap: 6px; }
 .opp.turn { border-color: var(--accent); background: rgba(255,210,63,.12); }
 .opp .hd { display: flex; justify-content: space-between; gap: 6px; font-size: .85rem; font-weight: 700; }
@@ -104,7 +118,7 @@ input::placeholder { color: rgba(185,203,232,.6); }
 .podium .sc { font-family: var(--font-display); font-weight: 800; font-size: 1.3rem; }
 .legend { display: flex; gap: 6px; flex-wrap: wrap; font-size: .78rem; }
 .legend span { padding: 3px 8px; border-radius: 999px; font-weight: 700; color: #14243d; }
-@media (prefers-reduced-motion: reduce) { .card.act { animation: none; } .btn:active { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .card.act, .btn.big { animation: none; } .btn:active { transform: none; } }
 </style>
 </head>
 <body>
@@ -262,7 +276,7 @@ input::placeholder { color: rgba(185,203,232,.6); }
   function oppBox(p, st) {
     var turn = st.phase === 'play' && st.turn === p.id;
     return h('div', { class: 'opp' + (turn ? ' turn' : '') },
-      h('div', { class: 'hd' }, h('span', { class: 'n' }, p.name + (p.connected && !p.left ? '' : ' (weg)')), h('span', null, p.total + ' P.')),
+      h('div', { class: 'hd' }, h('span', { class: 'n' }, p.name + (p.connected && !p.left ? '' : ' (weg)')), h('span', { class: 'big' }, p.total)),
       h('div', { class: 'mini grid' }, p.cards.map(function (c) { return cardEl(c); })),
       h('div', { class: 'muted small' }, st.phase === 'setup' ? (p.ups >= 2 ? 'bereit' : 'wählt Karten …') : 'sichtbar: ' + p.visible));
   }
@@ -295,22 +309,35 @@ input::placeholder { color: rgba(185,203,232,.6); }
     }));
     var hasDown = mp.cards.some(function (c) { return c.s === 'down'; });
     var others = st.players.filter(function (p) { return p.id !== st.you && p.inRound; });
+    var discardBtn = myTurn && tp === 'holdDeck' && hasDown
+      ? h('button', { class: 'btn big', onclick: function () { send({ t: 'discard' }); } }, 'Karte abwerfen und eine verdeckte aufdecken') : null;
     return [
       h('div', { class: 'row spread' }, h('h2', null, 'Runde ' + st.round), h('span', { class: 'badge soft' }, 'Code ' + st.code)),
       connBanner(),
+      scoreboard(st),
+      others.length ? h('div', { class: 'others n' + others.length }, others.map(function (p) { return oppBox(p, st); })) : null,
       h('div', { class: 'banner ' + kind }, info),
       h('div', { class: 'table' },
         h('div', { class: 'pile' }, cardEl({ s: 'down' }, { act: canDeck, onclick: function () { send({ t: 'draw' }); } }), 'Stapel (' + st.deckCount + ')'),
         h('div', { class: 'pile' }, cardEl(st.discardTop == null ? null : { s: 'up', v: st.discardTop }, { act: canTake, onclick: function () { send({ t: 'take' }); } }), 'Offene Karte'),
         holding != null ? h('div', { class: 'pile' }, cardEl({ s: 'up', v: holding }), 'In der Hand') : null),
-      myTurn && tp === 'holdDeck' && hasDown ? h('button', { class: 'btn ghost', onclick: function () { send({ t: 'discard' }); } }, 'Abwerfen und eine Karte aufdecken') : null,
+      discardBtn,
       h('div', { class: 'me-box' + (myTurn ? ' turn' : '') },
-        h('div', { class: 'row spread' }, h('strong', null, 'Du (' + mp.name + ')'), h('span', { class: 'muted small' }, 'Gesamt ' + mp.total + ' · sichtbar ' + mp.visible)),
+        h('div', { class: 'row spread' }, h('strong', null, 'Du (' + mp.name + ')'),
+          h('span', { class: 'sc' }, h('b', null, String(mp.total)), ' Gesamt · ', h('b', null, String(mp.visible)), ' sichtbar')),
         myGrid),
-      others.length ? h('div', { class: 'others' }, others.map(function (p) { return oppBox(p, st); })) : null,
       legend(),
       leaveButton()
     ];
+  }
+
+  function scoreboard(st) {
+    var ps = st.players.filter(function (p) { return p.inRound; }).slice().sort(function (a, b) { return a.total - b.total; });
+    return h('div', { class: 'board' }, ps.map(function (p) {
+      var turn = st.phase === 'play' && st.turn === p.id;
+      return h('div', { class: 'chip' + (turn ? ' turn' : '') + (p.id === st.you ? ' mine' : '') },
+        h('span', { class: 'cn' }, p.name), h('span', { class: 'cs' }, String(p.total)), h('span', { class: 'cv' }, '+' + p.visible));
+    }));
   }
 
   function resultTable(st) {
